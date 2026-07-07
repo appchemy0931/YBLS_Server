@@ -24,8 +24,19 @@ connectDB();
 
 const app = express();
 
+const allowedOrigins = (process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map((o) => o.trim().replace(/\/+$/, ''))
+  : ['http://localhost:5173']
+);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin.replace(/\/+$/, ''))) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Not allowed by CORS: ${origin}`));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
