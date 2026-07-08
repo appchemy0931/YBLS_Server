@@ -26,12 +26,14 @@ const app = express();
 
 const allowedOrigins = (process.env.CLIENT_URL
   ? process.env.CLIENT_URL.split(',').map((o) => o.trim().replace(/\/+$/, ''))
-  : ['http://localhost:5173']
+  : []
 );
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin.replace(/\/+$/, ''))) {
+    const normalized = origin ? origin.replace(/\/+$/, '') : '';
+    const isLocalhost = /^http:\/\/localhost(:\d+)?$/.test(normalized) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(normalized);
+    if (!origin || allowedOrigins.includes(normalized) || isLocalhost) {
       callback(null, true);
     } else {
       callback(new Error(`Not allowed by CORS: ${origin}`));

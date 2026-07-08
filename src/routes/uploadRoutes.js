@@ -13,4 +13,12 @@ router.post('/', protect, admin, upload.single('image'), asyncHandler(async (req
   res.json({ success: true, image: `/uploads/${req.file.filename}` });
 }));
 
+router.post('/avatar', protect, upload.single('image'), asyncHandler(async (req, res) => {
+  if (!req.file) {
+    res.status(400);
+    throw new Error('No image file provided');
+  }
+  res.json({ success: true, image: `/uploads/${req.file.filename}` });
+}));
+
 export default router;

@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import Service from '../models/Service.js';
+import deleteImage from '../utils/deleteImage.js';
 
 const SERVICE_CATEGORIES = [
   'Facial Wash',
@@ -38,6 +39,9 @@ const updateService = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Service not found');
   }
+  if (req.body.image !== undefined && req.body.image !== service.image) {
+    deleteImage(service.image);
+  }
   Object.assign(service, req.body);
   const updated = await service.save();
   res.json({ success: true, service: updated });
@@ -49,6 +53,7 @@ const deleteService = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Service not found');
   }
+  deleteImage(service.image);
   await service.deleteOne();
   res.json({ success: true, message: 'Service deleted' });
 });

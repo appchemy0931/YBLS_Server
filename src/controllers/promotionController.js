@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import Promotion from '../models/Promotion.js';
+import deleteImage from '../utils/deleteImage.js';
 
 const getPromotions = asyncHandler(async (req, res) => {
   const promotions = await Promotion.find().sort({ createdAt: -1 });
@@ -26,6 +27,9 @@ const updatePromotion = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Promotion not found');
   }
+  if (req.body.image !== undefined && req.body.image !== promotion.image) {
+    deleteImage(promotion.image);
+  }
   Object.assign(promotion, req.body);
   const updated = await promotion.save();
   res.json({ success: true, promotion: updated });
@@ -37,6 +41,7 @@ const deletePromotion = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Promotion not found');
   }
+  deleteImage(promotion.image);
   await promotion.deleteOne();
   res.json({ success: true, message: 'Promotion deleted' });
 });

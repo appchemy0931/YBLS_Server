@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import Product from '../models/Product.js';
+import deleteImage from '../utils/deleteImage.js';
 
 const PRODUCT_CATEGORIES = ['Skincare', 'Beauty Product', 'Treatment Product'];
 
@@ -31,6 +32,9 @@ const updateProduct = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Product not found');
   }
+  if (req.body.image !== undefined && req.body.image !== product.image) {
+    deleteImage(product.image);
+  }
   Object.assign(product, req.body);
   const updated = await product.save();
   res.json({ success: true, product: updated });
@@ -42,6 +46,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Product not found');
   }
+  deleteImage(product.image);
   await product.deleteOne();
   res.json({ success: true, message: 'Product deleted' });
 });

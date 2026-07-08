@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import { generateReferralCode, generateUserId } from '../utils/referralCode.js';
 import recordTransaction from '../utils/walletHelper.js';
+import deleteImage from '../utils/deleteImage.js';
 
 const SIGNUP_BONUS = 100;
 
@@ -119,7 +120,10 @@ const updateProfile = asyncHandler(async (req, res) => {
   }
   user.name = req.body.name || user.name;
   user.phone = req.body.phone || user.phone;
-  user.profileImage = req.body.profileImage || user.profileImage;
+  if (req.body.profileImage !== undefined && req.body.profileImage !== user.profileImage) {
+    deleteImage(user.profileImage);
+    user.profileImage = req.body.profileImage;
+  }
   const updated = await user.save();
   res.json({
     success: true,

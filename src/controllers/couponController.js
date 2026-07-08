@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler';
 import Coupon from '../models/Coupon.js';
 import User from '../models/User.js';
 import recordTransaction, { deductFromWallet } from '../utils/walletHelper.js';
+import deleteImage from '../utils/deleteImage.js';
 
 const getCoupons = asyncHandler(async (req, res) => {
   const coupons = await Coupon.find().sort({ amount: 1 });
@@ -32,6 +33,9 @@ const updateCoupon = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Coupon not found');
   }
+  if (req.body.image !== undefined && req.body.image !== coupon.image) {
+    deleteImage(coupon.image);
+  }
   Object.assign(coupon, req.body);
   const updated = await coupon.save();
   res.json({ success: true, coupon: updated });
@@ -43,6 +47,7 @@ const deleteCoupon = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Coupon not found');
   }
+  deleteImage(coupon.image);
   await coupon.deleteOne();
   res.json({ success: true, message: 'Coupon deleted' });
 });
