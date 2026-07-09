@@ -30,4 +30,12 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
+// In-memory storage for avatars streamed into MongoDB GridFS (fs.files / fs.chunks)
+const avatarUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+
 export default upload;
+export { avatarUpload };

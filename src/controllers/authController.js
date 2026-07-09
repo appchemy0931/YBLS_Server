@@ -121,7 +121,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   user.name = req.body.name || user.name;
   user.phone = req.body.phone || user.phone;
   if (req.body.profileImage !== undefined && req.body.profileImage !== user.profileImage) {
-    deleteImage(user.profileImage);
+    await deleteImage(user.profileImage);
     user.profileImage = req.body.profileImage;
   }
   const updated = await user.save();

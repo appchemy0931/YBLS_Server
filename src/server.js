@@ -3,6 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import path from 'path';
+import asyncHandler from 'express-async-handler';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/error.js';
 
@@ -18,6 +19,7 @@ import referralRoutes from './routes/referralRoutes.js';
 import rankingRoutes from './routes/rankingRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import { serveAvatar } from './utils/gridfs.js';
 
 dotenv.config();
 connectDB();
@@ -43,6 +45,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(morgan('dev'));
+app.get('/uploads/avatar/:id', asyncHandler(serveAvatar));
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/', (req, res) => {
