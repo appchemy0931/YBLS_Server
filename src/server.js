@@ -19,6 +19,7 @@ import referralRoutes from './routes/referralRoutes.js';
 import rankingRoutes from './routes/rankingRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import testimonialRoutes from './routes/testimonialRoutes.js';
 import { serveAvatar } from './utils/gridfs.js';
 
 dotenv.config();
@@ -64,6 +65,7 @@ app.use('/api/referral', referralRoutes);
 app.use('/api/ranking', rankingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/testimonials', testimonialRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

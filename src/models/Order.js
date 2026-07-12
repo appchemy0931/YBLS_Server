@@ -10,6 +10,7 @@ const orderItemSchema = new mongoose.Schema(
     price: Number,
     qty: Number,
     image: String,
+    weightLabel: { type: String, default: '' },
   },
   { _id: false }
 );

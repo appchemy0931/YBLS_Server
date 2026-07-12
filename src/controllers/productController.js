@@ -12,6 +12,11 @@ const getProducts = asyncHandler(async (req, res) => {
   res.json({ success: true, count: products.length, categories: PRODUCT_CATEGORIES, products });
 });
 
+const getAllProducts = asyncHandler(async (req, res) => {
+  const products = await Product.find({}).sort({ createdAt: -1 });
+  res.json({ success: true, count: products.length, categories: PRODUCT_CATEGORIES, products });
+});
+
 const getProductById = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (!product) {
@@ -51,4 +56,4 @@ const deleteProduct = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Product deleted' });
 });
 
-export { PRODUCT_CATEGORIES, getProducts, getProductById, createProduct, updateProduct, deleteProduct };
+export { PRODUCT_CATEGORIES, getProducts, getAllProducts, getProductById, createProduct, updateProduct, deleteProduct };

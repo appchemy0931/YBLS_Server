@@ -15,6 +15,7 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Price is required'],
       min: 0,
+      default: 0,
     },
     stock: {
       type: Number,
@@ -35,6 +36,16 @@ const productSchema = new mongoose.Schema(
       type: String,
       enum: ['active', 'inactive'],
       default: 'active',
+    },
+    weights: {
+      type: [
+        {
+          label: { type: String, trim: true },
+          stock: { type: Number, min: 0, default: 0 },
+          price: { type: Number, min: 0, default: 0 },
+        },
+      ],
+      default: [],
     },
   },
   { timestamps: true }

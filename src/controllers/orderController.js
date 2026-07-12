@@ -21,18 +21,35 @@ const createOrder = asyncHandler(async (req, res) => {
       res.status(404);
       throw new Error(`Product not found: ${item.productId}`);
     }
-    if (product.stock < item.qty) {
-      res.status(400);
-      throw new Error(`Insufficient stock for ${product.name}`);
+
+    let unitPrice = product.price;
+    let weightLabel = '';
+    let variantStock = null;
+
+    if (item.weightLabel && product.weights && product.weights.length > 0) {
+      const weight = product.weights.find((w) => w.label === item.weightLabel);
+      if (weight) {
+        unitPrice = weight.price;
+        weightLabel = weight.label;
+        variantStock = weight.stock;
+      }
     }
+
+    const effectiveStock = variantStock !== null ? variantStock : product.stock;
+    if (effectiveStock < item.qty) {
+      res.status(400);
+      throw new Error(`Insufficient stock for ${product.name}${weightLabel ? ` (${weightLabel})` : ''}`);
+    }
+
     orderItems.push({
       productId: product._id,
       name: product.name,
-      price: product.price,
+      price: unitPrice,
       qty: item.qty,
       image: product.image,
+      weightLabel,
     });
-    totalAmount += product.price * item.qty;
+    totalAmount += unitPrice * item.qty;
   }
 
   let paidFromWallet = false;
@@ -65,7 +82,14 @@ const createOrder = asyncHandler(async (req, res) => {
   });
 
   for (const item of orderItems) {
-    await Product.findByIdAndUpdate(item.productId, { $inc: { stock: -item.qty } });
+    if (item.weightLabel) {
+      await Product.updateOne(
+        { _id: item.productId, 'weights.label': item.weightLabel },
+        { $inc: { 'weights.$.stock': -item.qty, stock: -item.qty } }
+      );
+    } else {
+      await Product.findByIdAndUpdate(item.productId, { $inc: { stock: -item.qty } });
+    }
   }
 
   res.status(201).json({ success: true, order });
@@ -161,6 +185,7 @@ const updateOrder = asyncHandler(async (req, res) => {
       price: Number(it.price) || 0,
       qty: Number(it.qty) || 1,
       image: it.image || '',
+      weightLabel: it.weightLabel || '',
     }));
   }
 
