@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import Service from '../models/Service.js';
+import { deleteFileById, extractAvatarId } from '../utils/gridfs.js';
 import Booking from '../models/Booking.js';
 import RankingPurchase from '../models/RankingPurchase.js';
 import Order from '../models/Order.js';
@@ -162,7 +163,11 @@ const deleteUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('Cannot delete admin user');
   }
+  const avatarId = extractAvatarId(user.profileImage);
   await user.deleteOne();
+  if (avatarId) {
+    await deleteFileById(avatarId);
+  }
   res.json({ success: true, message: 'User deleted' });
 });
 

@@ -40,6 +40,10 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    selfCollect: {
+      type: Boolean,
+      default: false,
+    },
     cancellationReason: {
       type: String,
       default: '',

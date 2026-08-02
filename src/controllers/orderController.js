@@ -5,7 +5,7 @@ import User from '../models/User.js';
 import recordTransaction, { deductFromWallet } from '../utils/walletHelper.js';
 
 const createOrder = asyncHandler(async (req, res) => {
-  const { items, shippingAddress, payFromWallet } = req.body;
+  const { items, shippingAddress, payFromWallet, selfCollect } = req.body;
 
   if (!items || items.length === 0) {
     res.status(400);
@@ -78,7 +78,8 @@ const createOrder = asyncHandler(async (req, res) => {
     totalAmount,
     status: paidFromWallet ? 'Paid' : 'Pending',
     paidFromWallet,
-    shippingAddress: shippingAddress || '',
+    shippingAddress: selfCollect ? '' : shippingAddress || '',
+    selfCollect: !!selfCollect,
   });
 
   for (const item of orderItems) {
@@ -164,7 +165,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 });
 
 const updateOrder = asyncHandler(async (req, res) => {
-  const { status, shippingAddress, totalAmount, items, reason } = req.body;
+  const { status, shippingAddress, totalAmount, items, reason, selfCollect } = req.body;
   const order = await Order.findById(req.params.id);
   if (!order) {
     res.status(404);
@@ -175,6 +176,7 @@ const updateOrder = asyncHandler(async (req, res) => {
   const originalTotal = order.totalAmount;
 
   if (typeof shippingAddress === 'string') order.shippingAddress = shippingAddress;
+  if (typeof selfCollect === 'boolean') order.selfCollect = selfCollect;
   if (totalAmount !== undefined && totalAmount !== null && !Number.isNaN(Number(totalAmount))) {
     order.totalAmount = Number(totalAmount);
   }

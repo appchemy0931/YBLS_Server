@@ -12,7 +12,14 @@ const generateReferralCode = async () => {
 
 const generateUserId = async () => {
   const count = await User.countDocuments();
-  return `YB${String(count + 1).padStart(5, '0')}`;
+  let num = count + 1;
+  let exists = true;
+  while (exists) {
+    const userId = `YB${String(num).padStart(5, '0')}`;
+    exists = await User.exists({ userId });
+    if (!exists) return userId;
+    num++;
+  }
 };
 
 export { generateReferralCode, generateUserId };
