@@ -36,6 +36,14 @@ const orderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    paidFromBalance: {
+      type: Number,
+      default: 0,
+    },
+    paidFromBonus: {
+      type: Number,
+      default: 0,
+    },
     shippingAddress: {
       type: String,
       default: '',

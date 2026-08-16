@@ -56,7 +56,7 @@ const getAllRequests = asyncHandler(async (req, res) => {
   const filter = {};
   if (status && status !== 'All') filter.status = status;
   const requests = await RankingPurchase.find(filter)
-    .populate('userId', 'name userId email phone')
+    .populate('userId', 'name userId email phone customerRanking')
     .populate('reviewedBy', 'name userId')
     .sort({ createdAt: -1 });
   res.json({ success: true, count: requests.length, requests });

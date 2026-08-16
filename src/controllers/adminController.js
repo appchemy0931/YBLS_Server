@@ -133,6 +133,7 @@ const updateUser = asyncHandler(async (req, res) => {
   user.isActive = req.body.isActive !== undefined ? req.body.isActive : user.isActive;
   if (req.body.walletBalance !== undefined) user.walletBalance = req.body.walletBalance;
   if (req.body.walletBonus !== undefined) user.walletBonus = req.body.walletBonus;
+  if (req.body.customerRanking !== undefined) user.customerRanking = req.body.customerRanking;
   const updated = await user.save();
   res.json({ success: true, user: updated });
 });

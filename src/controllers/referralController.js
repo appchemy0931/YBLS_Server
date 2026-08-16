@@ -80,8 +80,8 @@ const getReferralQRCode = asyncHandler(async (req, res) => {
 
 const getAllReferrals = asyncHandler(async (req, res) => {
   const referrals = await Referral.find()
-    .populate('inviterUserId', 'name userId')
-    .populate('newUserId', 'name userId')
+    .populate('inviterUserId', 'name userId customerRanking')
+    .populate('newUserId', 'name userId customerRanking')
     .sort({ createdAt: -1 });
   res.json({ success: true, count: referrals.length, referrals });
 });

@@ -53,6 +53,7 @@ const createOrder = asyncHandler(async (req, res) => {
   }
 
   let paidFromWallet = false;
+  let userToSave = null;
   if (payFromWallet) {
     const user = await User.findById(req.user._id);
     const total = user.walletBalance + user.walletBonus;
@@ -61,14 +62,7 @@ const createOrder = asyncHandler(async (req, res) => {
       throw new Error('Insufficient wallet balance');
     }
     deductFromWallet(user, totalAmount);
-    await user.save();
-    await recordTransaction(
-      user._id,
-      'PRODUCT_PAYMENT',
-      -totalAmount,
-      `Product order payment`,
-      user.walletBalance + user.walletBonus
-    );
+    userToSave = user;
     paidFromWallet = true;
   }
 
@@ -81,6 +75,19 @@ const createOrder = asyncHandler(async (req, res) => {
     shippingAddress: selfCollect ? '' : shippingAddress || '',
     selfCollect: !!selfCollect,
   });
+
+  if (paidFromWallet && userToSave) {
+    await userToSave.save();
+    await recordTransaction(
+      userToSave._id,
+      'PRODUCT_PAYMENT',
+      -totalAmount,
+      `Product order payment #${order._id.toString().slice(-8).toUpperCase()}`,
+      userToSave.walletBalance + userToSave.walletBonus,
+      order._id,
+      'Order'
+    );
+  }
 
   for (const item of orderItems) {
     if (item.weightLabel) {
@@ -117,7 +124,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
   const filter = {};
   if (status && status !== 'All') filter.status = status;
   const orders = await Order.find(filter)
-    .populate('userId', 'name userId email phone')
+    .populate('userId', 'name userId email phone customerRanking')
     .populate('cancelledBy', 'name userId')
     .sort({ createdAt: -1 });
   res.json({ success: true, count: orders.length, orders });
@@ -221,7 +228,7 @@ const updateOrder = asyncHandler(async (req, res) => {
   }
 
   const updated = await order.save();
-  await updated.populate('userId', 'name userId email phone');
+  await updated.populate('userId', 'name userId email phone customerRanking');
   await updated.populate('cancelledBy', 'name userId');
   res.json({ success: true, order: updated });
 });

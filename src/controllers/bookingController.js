@@ -153,7 +153,7 @@ const getAllBookings = asyncHandler(async (req, res) => {
   if (status && status !== 'All') filter.status = status;
   if (date) filter.bookingDate = date;
   const bookings = await Booking.find(filter)
-    .populate('userId', 'name userId phone')
+    .populate('userId', 'name userId phone customerRanking')
     .populate('serviceId', 'name category image')
     .populate('promotionId', 'title image discount originalPrice')
     .populate('cancelledBy', 'name userId')
@@ -167,6 +167,11 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
   if (!booking) {
     res.status(404);
     throw new Error('Booking not found');
+  }
+
+  if (booking.status === 'Completed' && status !== 'Completed') {
+    res.status(400);
+    throw new Error('Completed bookings cannot be modified');
   }
 
   const wasCancelled = booking.status === 'Cancelled';
@@ -242,7 +247,9 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
           'BOOKING_PAYMENT',
           -booking.price,
           `Booking payment (RM${fromBalance} balance + RM${fromBonus} bonus) for ${booking.serviceName}`,
-          user.walletBalance + user.walletBonus
+          user.walletBalance + user.walletBonus,
+          booking._id,
+          'Booking'
         );
       } else if (booking.paymentMethod === 'wallet') {
         const walletDiscountRate =
@@ -264,7 +271,9 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
           walletDiscountRate > 0
             ? `Booking payment for ${booking.serviceName} (${Math.round(walletDiscountRate * 100)}% ${user.customerRanking}-star wallet discount applied)`
             : `Booking payment for ${booking.serviceName}`,
-          user.walletBalance + user.walletBonus
+          user.walletBalance + user.walletBonus,
+          booking._id,
+          'Booking'
         );
       }
     }
@@ -280,29 +289,6 @@ const deleteBooking = asyncHandler(async (req, res) => {
   if (!booking) {
     res.status(404);
     throw new Error('Booking not found');
-  }
-
-  if (booking.paidFromWallet && booking.status !== 'Cancelled') {
-    const user = await User.findById(booking.userId);
-    if (user) {
-      const refundBalance = booking.paidFromBalance || 0;
-      const refundBonus = booking.paidFromBonus || 0;
-      const refundAmount = refundBalance + refundBonus > 0 ? refundBalance + refundBonus : booking.price;
-      if (refundBalance + refundBonus > 0) {
-        user.walletBalance += refundBalance;
-        user.walletBonus += refundBonus;
-      } else {
-        user.walletBalance += booking.price;
-      }
-      await user.save();
-        await recordTransaction(
-          user._id,
-          'REFUND',
-          refundAmount,
-          `Refund for deleted booking - ${booking.serviceName}`,
-          user.walletBalance + user.walletBonus
-        );
-    }
   }
 
   await booking.deleteOne();

@@ -4,13 +4,44 @@ import Referral from '../models/Referral.js';
 
 const LEVEL_RATES = { 1: 0.05, 2: 0.03, 3: 0.02 };
 
-const recordTransaction = async (userId, type, amount, description, balanceAfter) => {
-  await WalletTransaction.create({
+const recordTransaction = async (
+  userId,
+  type,
+  amount,
+  description,
+  balanceAfter,
+  referenceId = null,
+  referenceModel = null,
+  walletBalanceAfter = null,
+  walletBonusAfter = null
+) => {
+  let balAfter = balanceAfter;
+  let wBalAfter = walletBalanceAfter;
+  let wBonAfter = walletBonusAfter;
+
+  if (wBalAfter === null || wBonAfter === null) {
+    try {
+      const u = await User.findById(userId).select('walletBalance walletBonus');
+      if (u) {
+        if (wBalAfter === null) wBalAfter = u.walletBalance;
+        if (wBonAfter === null) wBonAfter = u.walletBonus;
+        if (balAfter === undefined || balAfter === null) balAfter = u.walletBalance + u.walletBonus;
+      }
+    } catch {
+      // ignore lookup error
+    }
+  }
+
+  return await WalletTransaction.create({
     userId,
     type,
     amount,
     description,
-    balanceAfter,
+    balanceAfter: balAfter,
+    walletBalanceAfter: wBalAfter,
+    walletBonusAfter: wBonAfter,
+    referenceId,
+    referenceModel,
     date: Date.now(),
   });
 };

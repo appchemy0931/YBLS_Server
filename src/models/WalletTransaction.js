@@ -23,9 +23,33 @@ const walletTransactionSchema = new mongoose.Schema(
     balanceAfter: {
       type: Number,
     },
+    walletBalanceAfter: {
+      type: Number,
+    },
+    walletBonusAfter: {
+      type: Number,
+    },
+    paidFromBalance: {
+      type: Number,
+      default: 0,
+    },
+    paidFromBonus: {
+      type: Number,
+      default: 0,
+    },
     date: {
       type: Date,
       default: Date.now,
+    },
+    referenceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      refPath: 'referenceModel',
+      default: null,
+    },
+    referenceModel: {
+      type: String,
+      enum: ['Booking', 'Order', 'RankingPurchase', null],
+      default: null,
     },
   },
   { timestamps: true }
